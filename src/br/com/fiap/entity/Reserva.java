@@ -53,6 +53,12 @@ public class Reserva {
     public void setDestino(String destino) {
         this.destino = destino;
     }
+
+    @Override
+    public String toString() {
+        return "Reserva{" + "cpf=" + cpf + ", nome=" + nome + ", numeroPassagem=" + numeroPassagem + ", destino=" + destino + '}';
+    }
+    
     
     
 }

@@ -5,9 +5,11 @@
  */
 package br.com.fiap.views;
 
+import br.com.fiap.dao.ReservaDAO;
 import br.com.fiap.entity.Reserva;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Random;
 import javax.swing.JOptionPane;
 
 /**
@@ -16,11 +18,15 @@ import javax.swing.JOptionPane;
  */
 public class vendaPassagem extends javax.swing.JFrame {
 
+    ReservaDAO dao = new ReservaDAO();
+     private int  numeroPassagem;
+   
     /**
      * Creates new form vendaPassagem
      */
     public vendaPassagem() {
         initComponents();
+        setNumeroPassagem();
     }
 
     /**
@@ -148,10 +154,25 @@ public class vendaPassagem extends javax.swing.JFrame {
         });
 
         btnPesquisarReserva.setText("Pesquisar Reserva");
+        btnPesquisarReserva.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPesquisarReservaActionPerformed(evt);
+            }
+        });
 
         btnPesquisarCliente.setText("Pesquisar Cliente");
+        btnPesquisarCliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPesquisarClienteActionPerformed(evt);
+            }
+        });
 
         jToggleButton1.setText("Excluir Reserva");
+        jToggleButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton1ActionPerformed(evt);
+            }
+        });
 
         btnSair.setText("Sair");
         btnSair.addActionListener(new java.awt.event.ActionListener() {
@@ -217,13 +238,53 @@ public class vendaPassagem extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSairActionPerformed
-        System.exit(0);
+        int confirma = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja sair ?");
+        if (confirma == 0) {
+            System.exit(0);
+        }
     }//GEN-LAST:event_btnSairActionPerformed
 
     private void btnReservarPassagemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReservarPassagemActionPerformed
-        Reserva reserva = getFields();
-        JOptionPane.showMessageDialog(this, reserva);
+        
+        Reserva reserva = getFields(numeroPassagem);
+        dao.insert(reserva);
+        limparCampos();
     }//GEN-LAST:event_btnReservarPassagemActionPerformed
+
+    private void btnPesquisarReservaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPesquisarReservaActionPerformed
+        int n = Integer.parseInt(txtNumeroPassagem.getText());
+        Reserva reserva = dao.getByID(n);
+        if (reserva != null) {
+            setFields(reserva);
+        }
+        
+    }//GEN-LAST:event_btnPesquisarReservaActionPerformed
+
+    private void btnPesquisarClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPesquisarClienteActionPerformed
+        String nome = txtNome.getText();
+        if (nome.equalsIgnoreCase("")) {
+            JOptionPane.showMessageDialog(this, "Por favor, digite o nome do cliente");
+        }else{
+            Reserva reserva = dao.getByName(nome);
+            if (reserva != null) {
+                setFields(reserva);
+            }
+        }
+    }//GEN-LAST:event_btnPesquisarClienteActionPerformed
+
+    private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
+        int n = Integer.parseInt(txtNumeroPassagem.getText());
+        Reserva reserva = dao.getByID(n);
+        if (reserva != null) {
+            setFields(reserva);
+            int confirma = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir esta reserva ?");
+            if (confirma == 0) {
+                dao.delete(reserva.getNumeroPassagem());
+            }
+        }
+        
+        
+    }//GEN-LAST:event_jToggleButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -258,43 +319,66 @@ public class vendaPassagem extends javax.swing.JFrame {
                 new vendaPassagem().setVisible(true);
             }
         });
+        
+  
     }
 
-    private Reserva getFields(){
+    private Reserva getFields(int numeroPassagem){
         Reserva reserva = null;
         boolean validar = true;
+        try{
 
-        String cpf = txtCPF.getText();
-        String nome = txtNome.getText();
-        int numeroPassagem = Integer.parseInt(txtNumeroPassagem.getText());
-        String destino = (String) cbxDestino.getSelectedItem();
 
-        if (cpf.equals("")) {
-            JOptionPane.showMessageDialog(this, "Digite seu cpf");
-            validar = false;
-        }
+            String cpf = txtCPF.getText();
+            String nome = txtNome.getText();
+            String destino = (String) cbxDestino.getSelectedItem();
 
-        if (nome.equals("")) {
-            JOptionPane.showMessageDialog(this, "Digite seu nome");
-            validar = false;
-        }
+            if (cpf.equals("")) {
+                JOptionPane.showMessageDialog(this, "Digite seu cpf");
+                validar = false;
+            }
 
-        if (destino.equals("") || destino.equals("-- selecione --")) {
-            JOptionPane.showMessageDialog(this, "Selecione seu destino");
-            validar = false;
-        }
+            if (nome.equals("")) {
+                JOptionPane.showMessageDialog(this, "Digite seu nome");
+                validar = false;
+            }
 
-        if (numeroPassagem == 0) {
-            JOptionPane.showMessageDialog(this, "Digite o número da passagem");
-            validar = false;
-        }
+            if (destino.equals("") || destino.equalsIgnoreCase("-- Selecione --")) {
+                JOptionPane.showMessageDialog(this, "Selecione seu destino");
+                validar = false;
+            }
 
-        if (validar) {
-            reserva = new Reserva(cpf, nome, numeroPassagem, destino);
+
+            if (validar) {
+                reserva = new Reserva(cpf, nome, numeroPassagem, destino);
+            }
+           
+        
+        }catch(NumberFormatException e){
+              JOptionPane.showMessageDialog(this, "Preencha todos os campos corretamente");
         }
         return reserva;
     }
     
+    
+    private void limparCampos() {
+        txtCPF.setText("");
+        txtNome.setText("");
+        cbxDestino.setSelectedIndex(0);
+        setNumeroPassagem();
+    }
+    
+    private void setNumeroPassagem(){
+         numeroPassagem = dao.getLastId() + 1;
+         txtNumeroPassagem.setText(Integer.toString(numeroPassagem));
+    }
+    
+    private void setFields(Reserva reserva){
+        txtCPF.setText(reserva.getCpf());
+        txtNome.setText(reserva.getNome());
+        txtNumeroPassagem.setText(Integer.toString(reserva.getNumeroPassagem()));
+        cbxDestino.setSelectedItem(reserva.getDestino());
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnPesquisarCliente;

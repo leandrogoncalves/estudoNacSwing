@@ -29,7 +29,7 @@ public class ReservaDAO {
         public void insert(Reserva reserva){
         try {
             con = ConnectionSingleton.getConnection();
-            sql = "INSERT INTO POO_CLIENTE VALUES(?,?,?,?)";
+            sql = "INSERT INTO POO_RESERVA VALUES(?,?,?,?)";
             p = con.prepareStatement(sql);
             p.setString(1, reserva.getCpf());
             p.setString(2, reserva.getNome());
@@ -61,6 +61,7 @@ public class ReservaDAO {
             } else {
                 msg = "Falha ao excluir reserva";
             }
+             JOptionPane.showMessageDialog(null, msg);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Erro ao excluir reserva\n" + e);
         }
@@ -71,7 +72,7 @@ public class ReservaDAO {
         try {
 
             con = ConnectionSingleton.getConnection();
-            sql = "SELECT * FROM POO_RESERVA WHERE nome LIKE ?";
+            sql = "SELECT * FROM POO_RESERVA WHERE nome LIKE ? ";
             p = con.prepareStatement(sql);
             p.setString(1, nomePassageiro);
             rs = p.executeQuery();
@@ -87,9 +88,44 @@ public class ReservaDAO {
             }
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao pesquisar usuário.\n  Detalhes: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Erro ao pesquisar reserva.\n  Detalhes: " + e.getMessage());
+        }
+        
+        if (reserva == null) {
+            JOptionPane.showMessageDialog(null, "Nenhuma reserva encontrada com o nome: " + nomePassageiro);
         }
 
+        return reserva;
+    }
+    
+    public Reserva getByID(int numeroPassagem) {
+        Reserva reserva = null;
+        try {
+
+            con = ConnectionSingleton.getConnection();
+            sql = "SELECT * FROM POO_RESERVA WHERE numeroPassagem = ?";
+            p = con.prepareStatement(sql);
+            p.setInt(1, numeroPassagem);
+            rs = p.executeQuery();
+            String nome, cpf, destino, caminho;
+            
+            while (rs.next()) {
+                cpf = rs.getString("cpf");
+                nome = rs.getString("nome");
+                numeroPassagem = rs.getInt("numeropassagem");
+                destino = rs.getString("destino");
+                reserva = new Reserva(cpf, nome, numeroPassagem, destino);
+            }
+            
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao pesquisar reserva.\n  Detalhes: " + e.getMessage());
+        }
+
+        if (reserva == null) {
+            JOptionPane.showMessageDialog(null, "Nenhuma reserva encontrada com o codigo: " + numeroPassagem);
+        }
+        
         return reserva;
     }
 
@@ -103,7 +139,7 @@ public class ReservaDAO {
             rs = p.executeQuery();
             reservas = gerarLista();
         }catch(SQLException e){
-            JOptionPane.showMessageDialog(null, "Erro ao pesquisar todos os usuários");
+            JOptionPane.showMessageDialog(null, "Erro ao pesquisar reservas");
         }
         return reservas;
     }
@@ -122,6 +158,31 @@ public class ReservaDAO {
         }
         
         return lista;
+    }
+    
+    
+    public int getLastId(){
+         int lastId = 0;
+        try {
+
+            con = ConnectionSingleton.getConnection();
+            sql = "SELECT NVL(MAX(NUMEROPASSAGEM),1000) AS MAX_ID FROM POO_RESERVA";
+            p = con.prepareStatement(sql);
+            rs = p.executeQuery();
+            String nome, cpf, destino, caminho;
+            int numeroPassagem;    
+            
+            while (rs.next()) {
+                lastId = rs.getInt("MAX_ID");
+            }
+            
+            lastId = lastId > 999 ? lastId : 1000;
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao pesquisar ultimo id.\n  Detalhes: " + e.getMessage());
+        }
+
+        return lastId;
     }
    
 }
